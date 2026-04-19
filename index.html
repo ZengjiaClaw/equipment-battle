@@ -1,60 +1,240 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>持续备考</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>装备乱斗</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: "Microsoft YaHei", sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+#game-title { font-size: 28px; font-weight: bold; color: #e94560; margin: 15px 0; text-shadow: 2px 2px 4px #000; letter-spacing: 4px; }
+.hp-container { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+.hp-label { font-size: 14px; color: #aaa; min-width: 60px; }
+.hp-bar-bg { width: 200px; height: 20px; background: #333; border-radius: 10px; overflow: hidden; border: 2px solid #555; }
+.hp-bar-fill { height: 100%; background: linear-gradient(90deg, #e94560, #ff6b6b); transition: width 0.4s ease; border-radius: 8px; }
+.hp-text { font-size: 14px; font-weight: bold; min-width: 70px; }
+.armor-text { font-size: 12px; color: #74b9ff; min-width: 60px; }
+#battlefield { display: flex; justify-content: space-between; align-items: center; width: 90vw; max-width: 700px; height: 180px; background: #16213e; border: 2px solid #0f3460; border-radius: 12px; margin: 10px 0; padding: 10px 20px; position: relative; }
+.field-slot { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 80px; }
+.field-unit { width: 60px; height: 60px; background: #0f3460; border: 2px solid #e94560; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: #fff; text-align: center; padding: 2px; position: relative; }
+.field-unit .unit-hp { position: absolute; bottom: -18px; font-size: 10px; color: #e94560; font-weight: bold; }
+.unit-icon { font-size: 22px; }
+.unit-atk { font-size: 10px; color: #ff6b6b; }
+.unit-def { font-size: 10px; color: #74b9ff; }
+.vs-label { font-size: 32px; font-weight: bold; color: #e94560; text-shadow: 0 0 10px #e94560; }
+#hand-area { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; width: 90vw; max-width: 700px; min-height: 120px; background: #0f3460; border-radius: 12px; padding: 10px; margin: 10px 0; }
+.card { width: 80px; height: 110px; background: linear-gradient(145deg, #2c2c54, #40407a); border: 2px solid #706fd3; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; padding: 6px 4px; font-size: 11px; text-align: center; transition: transform 0.2s, box-shadow 0.2s; user-select: none; }
+.card:hover { transform: translateY(-8px); box-shadow: 0 8px 20px rgba(233,69,96,0.4); border-color: #e94560; }
+.card.selected { border-color: #feca57; box-shadow: 0 0 15px #feca57; transform: translateY(-5px); }
+.card.disabled { opacity: 0.5; cursor: not-allowed; }
+.card-cost { font-size: 14px; font-weight: bold; color: #feca57; margin-bottom: 2px; }
+.card-name { font-size: 11px; font-weight: bold; color: #fff; margin-bottom: 3px; line-height: 1.2; }
+.card-type { font-size: 9px; margin-bottom: 3px; }
+.card-stat { font-size: 10px; }
+.atk-stat { color: #ff6b6b; }
+.def-stat { color: #74b9ff; }
+#info-bar { display: flex; justify-content: space-between; align-items: center; width: 90vw; max-width: 700px; background: #16213e; border-radius: 8px; padding: 8px 15px; margin: 5px 0; font-size: 13px; }
+.energy-display { color: #feca57; font-weight: bold; }
+.turn-display { color: #aaa; }
+.round-display { color: #74b9ff; }
+.btn-row { display: flex; gap: 10px; margin: 10px 0; }
+.btn { padding: 8px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: all 0.2s; }
+.btn-attack { background: #e94560; color: #fff; }
+.btn-attack:hover { background: #ff6b6b; }
+.btn-primary { background: #706fd3; color: #fff; }
+.btn-primary:hover { background: #a29bfe; }
+.btn:disabled { background: #555; color: #888; cursor: not-allowed; }
+#game-log { width: 90vw; max-width: 700px; height: 80px; background: #111; border: 1px solid #333; border-radius: 8px; padding: 8px; overflow-y: auto; font-size: 12px; color: #aaa; margin-bottom: 15px; }
+.log-entry { margin: 2px 0; }
+.log-damage { color: #e94560; }
+.log-heal { color: #2ed573; }
+.log-info { color: #74b9ff; }
+.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
+.overlay h1 { font-size: 36px; margin-bottom: 10px; }
+.overlay p { font-size: 16px; color: #aaa; margin-bottom: 20px; }
+.hidden { display: none !important; }
+</style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- 头部 -->
-        <header class="app-header">
-            <h1>🏛️ 中级消防员刷题</h1>
-            <p>持续备考 · 章节练习 · 模拟考试</p>
-        </header>
-        
-        <!-- 导航标签 -->
-        <nav class="tab-nav">
-            <div class="tab-item active" data-page="home">
-                <span>🏠</span>
-                首页
-            </div>
-            <div class="tab-item" data-page="category">
-                <span>📚</span>
-                分类
-            </div>
-            <div class="tab-item" data-page="wrong">
-                <span>📕</span>
-                错题
-            </div>
-            <div class="tab-item" data-page="progress">
-                <span>📊</span>
-                进度
-            </div>
-        </nav>
-        
-        <!-- 内容区域 -->
-        <main id="content">
-            <!-- 动态内容 -->
-        </main>
-    </div>
-    
-    <!-- 确认退出弹窗 -->
-    <div class="modal-overlay" id="modal">
-        <div class="modal-content">
-            <h3>确认退出？</h3>
-            <p>退出后将中断当前答题进度</p>
-            <div class="modal-actions">
-                <button class="btn btn-secondary" id="modalCancel">取消</button>
-                <button class="btn btn-primary" id="modalConfirm">确认退出</button>
-            </div>
-        </div>
-    </div>
-    
-    <script src="data.js"></script>
-    <script src="app.js"></script>
+<div id="game-title">⚔️ 装 备 乱 斗 ⚔️</div>
+<div id="start-screen" class="overlay">
+  <h1>⚔️ 装备乱斗</h1>
+  <p>工业装备主题 · 卡牌对战</p>
+  <button class="btn btn-attack" onclick="startGame()">开始战斗</button>
+</div>
+<div id="end-screen" class="overlay hidden">
+  <h1 id="end-title">胜利</h1>
+  <p id="end-msg"></p>
+  <button class="btn btn-primary" onclick="startGame()">再来一局</button>
+</div>
+<div id="game-ui" class="hidden">
+  <div class="hp-container" style="justify-content:flex-start; padding-left:20px;">
+    <span class="hp-label">👹 敌方</span>
+    <div class="hp-bar-bg"><div id="enemy-hp-fill" class="hp-bar-fill"></div></div>
+    <span id="enemy-hp-text" class="hp-text">30/30</span>
+    <span id="enemy-armor" class="armor-text">🛡0</span>
+  </div>
+  <div id="battlefield">
+    <div id="enemy-field" class="field-slot"></div>
+    <div class="vs-label">⚔</div>
+    <div id="player-field" class="field-slot"></div>
+  </div>
+  <div class="hp-container" style="justify-content:flex-start; padding-left:20px;">
+    <span class="hp-label">🛡 我方</span>
+    <div class="hp-bar-bg"><div id="player-hp-fill" class="hp-bar-fill" style="background:linear-gradient(90deg,#2ed573,#7bed9f)"></div></div>
+    <span id="player-hp-text" class="hp-text">30/30</span>
+    <span id="player-armor" class="armor-text">🛡0</span>
+  </div>
+  <div id="info-bar">
+    <span class="energy-display">⚡ 能量: <span id="energy">1</span>/<span id="max-energy">1</span></span>
+    <span class="round-display">第 <span id="round">1</span> 回合 / 30</span>
+    <span class="turn-display" id="turn-display">操作阶段</span>
+  </div>
+  <div id="hand-area"></div>
+  <div class="btn-row">
+    <button id="btn-end-turn" class="btn btn-attack" onclick="endTurn()">结束回合</button>
+    <button class="btn btn-primary" onclick="startGame()">重新开始</button>
+  </div>
+  <div id="game-log"></div>
+</div>
+<script>
+const T={WEAPON:0,ARMOR:1,SUMMON:2,SKILL:3};
+const TNAMES=["武器","护甲","召唤","技能"];
+const CARDS=[
+  {id:1,name:"扳手",type:T.WEAPON,cost:1,atk:3,def:0,icon:"🔧"},{id:2,name:"锤子",type:T.WEAPON,cost:2,atk:5,def:0,icon:"🔨"},
+  {id:3,name:"电钻",type:T.WEAPON,cost:2,atk:4,def:0,icon:"📍"},{id:4,name:"焊枪",type:T.WEAPON,cost:3,atk:6,def:0,icon:"🔥"},
+  {id:5,name:"喷灯",type:T.WEAPON,cost:3,atk:7,def:0,icon:"💥"},{id:6,name:"电锯",type:T.WEAPON,cost:4,atk:9,def:0,icon:"🪚"},
+  {id:7,name:"手套",type:T.ARMOR,cost:1,atk:0,def:2,icon:"🧤"},{id:8,name:"护目镜",type:T.ARMOR,cost:1,atk:0,def:3,icon:"🥽"},
+  {id:9,name:"工装靴",type:T.ARMOR,cost:2,atk:0,def:4,icon:"🥾"},{id:10,name:"头盔",type:T.ARMOR,cost:3,atk:0,def:6,icon:"⛑"},
+  {id:11,name:"防护服",type:T.ARMOR,cost:4,atk:0,def:8,icon:"🦺"},
+  {id:12,name:"小扳手",type:T.SUMMON,cost:1,atk:2,def:1,spd:3,icon:"🔧"},{id:13,name:"小焊枪",type:T.SUMMON,cost:2,atk:3,def:2,spd:2,icon:"🔥"},
+  {id:14,name:"小钻头",type:T.SUMMON,cost:2,atk:2,def:3,spd:1,icon:"📍"},{id:15,name:"小锤子",type:T.SUMMON,cost:3,atk:4,def:3,spd:3,icon:"🔨"},
+  {id:16,name:"小电锯",type:T.SUMMON,cost:4,atk:5,def:4,spd:2,icon:"🪚"},
+  {id:17,name:"急救",type:T.SKILL,cost:1,heal:4,icon:"💊"},{id:18,name:"充能",type:T.SKILL,cost:1,draw:2,icon:"⚡"},
+  {id:19,name:"维修",type:T.SKILL,cost:2,shieldAll:2,icon:"🔧"},{id:20,name:"过热",type:T.SKILL,cost:2,burn:3,icon:"🔥"},
+  {id:21,name:"重装",type:T.SKILL,cost:3,buffMy:3,icon:"⚔"},{id:22,name:"闪电",type:T.SKILL,cost:4,nuke:8,icon:"⚡"},
+];
+let S={},sel=null,uid=0;
+function sh(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function init(){
+  S={playerHP:30,playerMaxHP:30,playerArmor:0,enemyHP:30,enemyMaxHP:30,enemyArmor:0,energy:1,maxEnergy:1,round:1,playerField:[],enemyField:[],deck:[],playerHand:[],enemyDeck:[],enemyHand:[],burnStacks:{player:0,enemy:0},phase:"player",gameOver:false,log:[]};
+  let d=[];for(let c of CARDS)for(let i=0;i<3;i++)d.push({...c,uid:null});
+  S.deck=sh(d);let ed=[];for(let c of CARDS)for(let i=0;i<2;i++)ed.push({...c,uid:null});
+  S.enemyDeck=sh(ed);
+  for(let i=0;i<3;i++){dra("player");dra("enemy");}
+}
+function dra(w){let h=w==="player"?S.playerHand:S.enemyHand;let d=w==="player"?S.deck:S.enemyDeck;if(h.length<7&&d.length>0)h.push(d.pop());}
+function addLog(m,c=""){S.log.push({m,c});rLog();}
+function rLog(){let e=document.getElementById("game-log");e.innerHTML=S.log.slice(-8).map(l=>`<div class="log-entry ${l.c}">${l.m}</div>`).join("");e.scrollTop=e.scrollHeight;}
+function start(){
+  document.getElementById("start-screen").classList.add("hidden");
+  document.getElementById("end-screen").classList.add("hidden");
+  document.getElementById("game-ui").classList.remove("hidden");
+  init();rAll();addLog("⚔ 战斗开始！","log-info");
+}
+function rAll(){rHP();rE();rF();rH();}
+function rHP(){
+  document.getElementById("enemy-hp-fill").style.width=(S.enemyHP/S.enemyMaxHP*100)+"%";
+  document.getElementById("player-hp-fill").style.width=(S.playerHP/S.playerMaxHP*100)+"%";
+  document.getElementById("enemy-hp-text").textContent=S.enemyHP+"/"+S.enemyMaxHP;
+  document.getElementById("player-hp-text").textContent=S.playerHP+"/"+S.playerMaxHP;
+  document.getElementById("enemy-armor").textContent="🛡"+S.enemyArmor;
+  document.getElementById("player-armor").textContent="🛡"+S.playerArmor;
+}
+function rE(){document.getElementById("energy").textContent=S.energy;document.getElementById("max-energy").textContent=S.maxEnergy;document.getElementById("round").textContent=S.round;document.getElementById("turn-display").textContent=S.phase==="player"?"操作阶段":"敌方回合";}
+function rF(){
+  let pf=document.getElementById("player-field"),ef=document.getElementById("enemy-field");
+  pf.innerHTML=S.playerField.map(u=>`<div class="field-unit"><span class="unit-icon">${u.icon}</span><span class="unit-atk">⚔${u.atk}</span><span class="unit-def">🛡${u.def}</span><span class="unit-hp">❤${u.hp}/${u.maxHp}</span></div>`).join("");
+  ef.innerHTML=S.enemyField.map(u=>`<div class="field-unit"><span class="unit-icon">${u.icon}</span><span class="unit-atk">⚔${u.atk}</span><span class="unit-def">🛡${u.def}</span><span class="unit-hp">❤${u.hp}/${u.maxHp}</span></div>`).join("");
+}
+function rH(){
+  let a=document.getElementById("hand-area");
+  a.innerHTML=S.playerHand.map((c,i)=>{
+    let cls="card";
+    if(sel===i)cls+=" selected";
+    if(c.cost>S.energy)cls+=" disabled";
+    let tc=["#ff6b6b","#74b9ff","#2ed573","#feca57"][c.type];
+    let st="";
+    if(c.atk>0)st+=`<span class="atk-stat">⚔${c.atk}</span>`;
+    if(c.def>0)st+=`<span class="def-stat">🛡${c.def}</span>`;
+    if(c.heal>0)st=`<span style="color:#2ed573">❤+${c.heal}</span>`;
+    if(c.draw>0)st=`<span style="color:#feca57">抽${c.draw}</span>`;
+    if(c.nuke>0)st=`<span class="atk-stat">⚔${c.nuke}</span>`;
+    return `<div class="${cls}" onclick="pC(${i})"><span class="card-cost">⚡${c.cost}</span><span class="card-name">${c.icon} ${c.name}</span><span class="card-type" style="color:${tc}">${TNAMES[c.type]}</span><span class="card-stat">${st}</span></div>`;
+  }).join("");
+}
+function pC(i){
+  if(S.phase!=="player"||S.gameOver)return;
+  let c=S.playerHand[i];
+  if(c.cost>S.energy){addLog("⚠ 能量不足！","");return;}
+  S.energy-=c.cost;S.playerHand.splice(i,1);sel=null;
+  if(c.type===T.WEAPON){let d=cd(c.atk,S.enemyArmor);S.enemyArmor=Math.max(0,S.enemyArmor-c.atk);S.enemyHP=Math.max(0,S.enemyHP-d);addLog(`🔧 ${c.icon}${c.name} 造成 ${d} 点伤害！`,"log-damage");}
+  else if(c.type===T.ARMOR){S.playerArmor+=c.def;addLog(`🛡 ${c.icon}${c.name} +${c.def} 护甲`,"log-info");}
+  else if(c.type===T.SUMMON){let u={uid:++uid,icon:c.icon,name:c.name,atk:c.atk,def:c.def,hp:c.atk+c.def,maxHp:c.atk+c.def,spd:c.spd||2,rounds:0,burn:0};S.playerField.push(u);addLog(`🛠 ${c.icon}${c.name} (${c.atk}/${c.def}) 上场！`,"log-info");}
+  else{
+    if(c.heal){S.playerHP=Math.min(S.playerMaxHP,S.playerHP+c.heal);addLog(`💊 ${c.icon}${c.name} 回复 ${c.heal} 血`,"log-heal");}
+    if(c.draw){for(let j=0;j<c.draw;j++)dra("player");addLog(`⚡ ${c.icon}${c.name} 抽了 ${c.draw} 张`,"log-info");}
+    if(c.shieldAll){S.playerArmor+=c.shieldAll;for(let u of S.playerField)u.def+=c.shieldAll;addLog(`🔧 ${c.icon}${c.name} 全员 +${c.shieldAll} 护甲`,"log-info");}
+    if(c.burn){for(let u of S.enemyField)u.burn=(u.burn||0)+c.burn;addLog(`🔥 ${c.icon}${c.name} 敌人受 ${c.burn} 灼烧！`,"log-damage");}
+    if(c.buffMy){for(let u of S.playerField){u.atk+=c.buffMy;u.def+=c.buffMy;u.hp+=c.buffMy;u.maxHp+=c.buffMy;}addLog(`⚔ ${c.icon}${c.name} 我方单位 +${c.buffMy} 属性！`,"log-info");}
+    if(c.nuke){let d=cd(c.nuke,S.enemyArmor);S.enemyArmor=Math.max(0,S.enemyArmor-c.nuke);S.enemyHP=Math.max(0,S.enemyHP-d);addLog(`⚡ ${c.icon}${c.name} 造成 ${d} 点伤害！`,"log-damage");}
+  }
+  rAll();ck();
+}
+function cd(a,ar){return Math.max(1,a-Math.floor(ar/2));}
+function endTurn(){
+  if(S.phase!=="player"||S.gameOver)return;
+  S.phase="enemy";rAll();addLog("👹 敌方回合...","log-info");
+  setTimeout(eT,800);
+}
+function eT(){
+  if(S.gameOver)return;
+  dra("enemy");eP();
+  setTimeout(()=>{
+    S.round++;
+    if(S.round>30){S.gameOver=true;showEnd(S.playerHP>S.enemyHP,"回合超时，你以生命值优势获胜！");return;}
+    S.maxEnergy=Math.min(10,S.maxEnergy+1);S.energy=S.maxEnergy;dra("enemy");
+    S.playerField=S.playerField.filter(u=>{u.rounds++;if(u.rounds>=3){addLog(`⏱ ${u.icon}${u.name} 消失了`,"log-info");}return u.rounds<3;});
+    S.enemyField=S.enemyField.filter(u=>{u.rounds++;if(u.rounds>=3){addLog(`⏱ 敌方 ${u.icon}${u.name} 消失了`,"log-info");}return u.rounds<3;});
+    for(let u of S.enemyField){if(u.burn>0){u.hp-=u.burn;u.burn=Math.max(0,u.burn-1);if(u.hp<=0)addLog(`🔥 ${u.icon}${u.name} 灼烧而亡！`,"log-damage");}}
+    S.enemyField=S.enemyField.filter(u=>u.hp>0);
+    S.phase="player";rAll();ck();
+    if(!S.gameOver)addLog(`⚡ 第 ${S.round} 回合，能量 ${S.energy}/${S.maxEnergy}`,"log-info");
+  },500);
+}
+function eP(){
+  let ee=S.maxEnergy,eh=S.enemyHand;
+  let pl=true;
+  while(pl&&ee>0){
+    let af=eh.filter(c=>c.cost<=ee);
+    if(af.length===0){pl=false;break;}
+    let c=af[Math.floor(Math.random()*af.length)];ee-=c.cost;let ix=eh.indexOf(c);eh.splice(ix,1);
+    if(c.type===T.WEAPON){let d=cd(c.atk,S.playerArmor);S.playerArmor=Math.max(0,S.playerArmor-c.atk);S.playerHP=Math.max(0,S.playerHP-d);addLog(`👹 敌方${c.icon}${c.name} 造成 ${d} 伤害`,"log-damage");}
+    else if(c.type===T.ARMOR){S.enemyArmor+=c.def;addLog(`👹 敌方${c.icon}${c.name} +${c.def} 护甲`,"log-info");}
+    else if(c.type===T.SUMMON){let u={uid:++uid,icon:c.icon,name:c.name,atk:c.atk,def:c.def,hp:c.atk+c.def,maxHp:c.atk+c.def,spd:c.spd||2,rounds:0,burn:0};S.enemyField.push(u);addLog(`👹 敌方${c.icon}${c.name} (${c.atk}/${c.def}) 上场`,"log-info");}
+    else{if(c.heal){S.enemyHP=Math.min(S.enemyMaxHP,S.enemyHP+c.heal);addLog(`👹 敌方${c.icon} 回复 ${c.heal} 血`,"log-heal");}if(c.nuke){let d=cd(c.nuke,S.playerArmor);S.playerArmor=Math.max(0,S.playerArmor-c.nuke);S.playerHP=Math.max(0,S.playerHP-d);addLog(`👹 敌方${c.icon} 造成 ${d} 伤害`,"log-damage");}if(c.burn){for(let u of S.playerField)u.burn=(u.burn||0)+c.burn;addLog(`👹 敌方${c.icon} 灼烧！`,"log-damage");}if(c.shieldAll){S.enemyArmor+=c.shieldAll;for(let u of S.enemyField)u.def+=c.shieldAll;}if(c.buffMy){for(let u of S.enemyField){u.atk+=c.buffMy;u.def+=c.buffMy;u.hp+=c.buffMy;u.maxHp+=c.buffMy;}}}
+  }
+  rAll();ck();
+  // combat
+  if(S.gameOver)return;
+  let pf=S.playerField,ef=S.enemyField;
+  pf.sort((a,b)=>b.spd-a.spd);
+  for(let u of pf){
+    if(ef.length>0){let t=ef.reduce((a,b)=>a.hp<b.hp?a:b);let d=cd(u.atk,t.def);t.hp-=d;addLog(`${u.icon}${u.name} ⚔ ${t.icon}${t.name} -${d}HP`,"log-damage");}
+    else{let d=cd(u.atk,S.enemyArmor);S.enemyArmor=Math.max(0,S.enemyArmor-u.atk);S.enemyHP=Math.max(0,S.enemyHP-d);addLog(`${u.icon}${u.name} ⚔ 敌方英雄 -${d}HP`,"log-damage");}
+  }
+  S.playerField=S.playerField.filter(u=>u.hp>0);S.enemyField=S.enemyField.filter(u=>u.hp>0);
+  rAll();ck();
+}
+function ck(){if(S.playerHP<=0){S.gameOver=true;setTimeout(()=>showEnd(false,"你的英雄倒下了！"),300);}else if(S.enemyHP<=0){S.gameOver=true;setTimeout(()=>showEnd(true,"敌方英雄被击败！"),300);}}
+function showEnd(win,msg){
+  document.getElementById("game-ui").classList.add("hidden");
+  document.getElementById("end-screen").classList.remove("hidden");
+  document.getElementById("end-title").textContent=win?"🏆 胜利！":"💀 失败";
+  document.getElementById("end-title").style.color=win?"#2ed573":"#e94560";
+  document.getElementById("end-msg").textContent=msg+" (第"+S.round+"回合)";
+}
+document.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" ")endTurn();});
+</script>
 </body>
 </html>
