@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>持续备考</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 头部 -->
+        <header class="app-header">
+            <h1>🏛️ 中级消防员刷题</h1>
+            <p>持续备考 · 章节练习 · 模拟考试</p>
+        </header>
+        
+        <!-- 导航标签 -->
+        <nav class="tab-nav">
+            <div class="tab-item active" data-page="home">
+                <span>🏠</span>
+                首页
+            </div>
+            <div class="tab-item" data-page="category">
+                <span>📚</span>
+                分类
+            </div>
+            <div class="tab-item" data-page="wrong">
+                <span>📕</span>
+                错题
+            </div>
+            <div class="tab-item" data-page="progress">
+                <span>📊</span>
+                进度
+            </div>
+        </nav>
+        
+        <!-- 内容区域 -->
+        <main id="content">
+            <!-- 动态内容 -->
+        </main>
+    </div>
+    
+    <!-- 确认退出弹窗 -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content">
+            <h3>确认退出？</h3>
+            <p>退出后将中断当前答题进度</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="modalCancel">取消</button>
+                <button class="btn btn-primary" id="modalConfirm">确认退出</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
